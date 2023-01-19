@@ -1,0 +1,58 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+  id 'org.springframework.boot' version '2.7.9-SNAPSHOT'
+  id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+  id 'org.jetbrains.kotlin.jvm' version '1.6.21'
+  id 'org.jetbrains.kotlin.plugin.spring' version '1.6.21'
+  id 'org.jetbrains.kotlin.plugin.jpa' version '1.6.21'
+}
+
+group='net.bosowski'
+version='0.0.1-SNAPSHOT'
+sourceCompatibility='17'
+
+configurations {
+  compileOnly {
+    extendsFrom annotationProcessor
+  }
+}
+
+repositories {
+  mavenCentral()
+  maven { url 'https://repo.spring.io/milestone' }
+  maven { url 'https://repo.spring.io/snapshot' }
+}
+
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+  implementation 'org.springframework.boot:spring-boot-starter-groovy-templates'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+  implementation 'org.jetbrains.kotlin:kotlin-reflect'
+  implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+  compileOnly 'org.projectlombok:lombok'
+  developmentOnly 'org.springframework.boot:spring-boot-devtools'
+  runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+  runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+  annotationProcessor 'org.projectlombok:lombok'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+  implementation 'org.webjars:jquery:3.6.2'
+  implementation 'org.webjars:bootstrap:4.3.1'
+  implementation 'org.webjars:webjars-locator-core'
+  implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+  implementation 'org.webjars:js-cookie:2.2.1'
+}
+
+tasks.withType(KotlinCompile) {
+  kotlinOptions {
+    freeCompilerArgs=['-Xjsr305=strict']
+    jvmTarget='17'
+  }
+}
+
+tasks.named('test') {
+  useJUnitPlatform()
+}
