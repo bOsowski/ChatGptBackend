@@ -8,40 +8,36 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.core.user.OAuth2User
 import javax.persistence.*
 import java.util.Date
-import javax.validation.constraints.Size
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-class User(
-    @ManyToMany(cascade = [CascadeType.ALL])
-    var oauthAuthorities: List<OauthAuthority>? = ArrayList(),
-    @ManyToMany(cascade = [CascadeType.ALL])
-    var oauthAttributes: List<OauthAttribute>? = ArrayList()
+class OauthUser(
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, mappedBy = "user")
+    var oauthAttributes: List<OauthAttribute>?,
+
+    @ManyToMany
+    var oauthAuthorities: List<OauthAuthority>,
+
+    @NotNull
+    @Column(unique = true)
+    var email: String,
+
+    var firstName: String,
+    var lastName: String
 ) : OAuth2User {
+
     @Id
-    @Column(name = "id", nullable = false)
+    @NotNull
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     var id: Long? = null
 
     @NotNull
-    var registrationId: String? = null
-
-    @NotNull
-    var clientSecret: String? = null
-
-    @NotNull
-    @Size(min = 3)
-    var email: String? = null
-
-
-    @NotNull
-    var createdAt: Date = Date()
-
+    var firstLoggedInAt: Date = Date()
 
     override fun getName(): String {
-        TODO("Not yet implemented")
+        return oauthAttributes?.find { it.attributeKey == "name" }?.attributeValue ?: ""
     }
 
     override fun getAttributes(): Map<String?, String>? {
@@ -49,8 +45,8 @@ class User(
     }
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-        return this.oauthAuthorities?.toMutableList() ?: ArrayList()
+        val foundAuthorities = this.oauthAuthorities?.distinct()
+        return foundAuthorities?.toMutableList() ?: ArrayList()
     }
-
 
 }

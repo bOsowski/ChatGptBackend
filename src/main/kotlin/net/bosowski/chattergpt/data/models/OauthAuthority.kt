@@ -13,16 +13,16 @@ import javax.validation.constraints.NotNull
 @NoArgsConstructor
 class OauthAuthority(
     @NotNull
-    var authorityString: String
+    @Column(name = "oauthAuthority", nullable = false)
+    private var oauthAuthority: String
 ) : GrantedAuthority {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "id", nullable = false)
     var id: Long? = null
 
-
     override fun getAuthority(): String {
-        return authorityString
+        return oauthAuthority
     }
 
 }

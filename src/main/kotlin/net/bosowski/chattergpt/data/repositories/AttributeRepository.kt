@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface AttributeRepository : CrudRepository<OauthAttribute, Long> {
+    fun findAllByUserIdAndActiveTrue(userId: Long): List<OauthAttribute>
+
 }
