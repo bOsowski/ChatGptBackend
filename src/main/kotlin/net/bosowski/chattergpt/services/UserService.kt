@@ -1,10 +1,12 @@
 package net.bosowski.chattergpt.services
 
+import net.bosowski.chattergpt.data.models.Login
 import net.bosowski.chattergpt.data.models.OauthAttribute
 import net.bosowski.chattergpt.data.models.OauthAuthority
 import net.bosowski.chattergpt.data.models.OauthUser
 import net.bosowski.chattergpt.data.repositories.AttributeRepository
 import net.bosowski.chattergpt.data.repositories.AuthorityRepository
+import net.bosowski.chattergpt.data.repositories.LoginRepository
 import net.bosowski.chattergpt.data.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.GrantedAuthority
@@ -12,6 +14,7 @@ import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Service
+import kotlin.math.log
 
 @Service
 class UserService : OidcUserService() {
@@ -25,7 +28,12 @@ class UserService : OidcUserService() {
     @Autowired
     lateinit var attributeRepository: AttributeRepository
 
+    @Autowired
+    lateinit var loginRepository: LoginRepository
+
     fun login(authorities: Collection<GrantedAuthority>, attributes: Map<String, Any>, idToken: String): OauthUser {
+        val login = Login()
+
         val email = attributes["email"] as String
         var foundUser = userRepository.findByEmail(email)
 
@@ -46,9 +54,9 @@ class UserService : OidcUserService() {
                 }
             }
             foundUser.oauthAttributes =attributeRepository.findAllByUserIdAndActiveTrue(foundUser.id!!)
+            registerLogin(foundUser)
             return foundUser
         }
-
 
         val userAuthorities = ArrayList<OauthAuthority>()
         val existingAuthorities = authorityRepository.findAll()
@@ -70,9 +78,15 @@ class UserService : OidcUserService() {
             firstName = attributes["given_name"] as String,
             lastName = attributes["family_name"] as String
         )
+
         val newUser = userRepository.save(user)
         oauthAttributes.forEach { it.user = newUser; attributeRepository.save(it) }
+        registerLogin(newUser)
         return newUser
+    }
+
+    private fun registerLogin(oauthUser: OauthUser){
+        loginRepository.save(Login(oauthUser))
     }
 
 

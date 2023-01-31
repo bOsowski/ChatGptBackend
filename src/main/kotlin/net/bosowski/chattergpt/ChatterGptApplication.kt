@@ -57,10 +57,6 @@ class ChatterGptApplication {
         return http.build()
     }
 
-//    override fun loadUser(userRequest: OAuth2UserRequest?): OAuth2User {
-//        val defaultUser = DefaultOAuth2UserService().loadUser(userRequest)
-//        return userService.addUser(defaultUser.authorities, defaultUser.attributes)
-//    }
 }
 
 fun main(args: Array<String>) {

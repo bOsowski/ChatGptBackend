@@ -33,9 +33,6 @@ class OauthUser(
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     var id: Long? = null
 
-    @NotNull
-    var firstLoggedInAt: Date = Date()
-
     override fun getName(): String {
         return oauthAttributes?.find { it.attributeKey == "name" }?.attributeValue ?: ""
     }
