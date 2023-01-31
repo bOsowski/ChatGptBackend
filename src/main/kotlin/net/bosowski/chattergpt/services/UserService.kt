@@ -4,8 +4,8 @@ import net.bosowski.chattergpt.data.models.Login
 import net.bosowski.chattergpt.data.models.OauthAttribute
 import net.bosowski.chattergpt.data.models.OauthAuthority
 import net.bosowski.chattergpt.data.models.OauthUser
-import net.bosowski.chattergpt.data.repositories.AttributeRepository
-import net.bosowski.chattergpt.data.repositories.AuthorityRepository
+import net.bosowski.chattergpt.data.repositories.OauthAttributeRepository
+import net.bosowski.chattergpt.data.repositories.OauthAuthorityRepository
 import net.bosowski.chattergpt.data.repositories.LoginRepository
 import net.bosowski.chattergpt.data.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,7 +14,6 @@ import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Service
-import kotlin.math.log
 
 @Service
 class UserService : OidcUserService() {
@@ -23,10 +22,10 @@ class UserService : OidcUserService() {
     lateinit var userRepository: UserRepository
 
     @Autowired
-    lateinit var authorityRepository: AuthorityRepository
+    lateinit var authorityRepository: OauthAuthorityRepository
 
     @Autowired
-    lateinit var attributeRepository: AttributeRepository
+    lateinit var attributeRepository: OauthAttributeRepository
 
     @Autowired
     lateinit var loginRepository: LoginRepository

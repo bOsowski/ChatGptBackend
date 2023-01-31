@@ -5,5 +5,5 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface AuthorityRepository : CrudRepository<OauthAuthority, Long> {
+interface OauthAuthorityRepository : CrudRepository<OauthAuthority, Long> {
 }
