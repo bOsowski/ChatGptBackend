@@ -22,4 +22,12 @@ class CreditPurchase {
     @ManyToOne
     @JoinColumn(name = "oauth_user_id")
     var oauthUser: OauthUser? = null
+
+    @NotNull
+    var sessionId: String? = null
+
+    @NotNull
+    var completed = false
+
+    var successful: Boolean? = null
 }

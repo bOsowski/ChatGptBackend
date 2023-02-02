@@ -34,7 +34,7 @@ class OauthUser(
     var id: Long? = null
 
     @NotNull
-    var availableCredits: Float? = 0f;
+    var availableCredits: Float = 0f;
 
     override fun getName(): String {
         return oauthAttributes?.find { it.attributeKey == "name" }?.attributeValue ?: ""

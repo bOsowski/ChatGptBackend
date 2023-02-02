@@ -6,7 +6,7 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
   security:
     oauth2:
       client:
@@ -21,3 +21,8 @@ spring:
 logging:
   level:
     web: debug
+
+stripe:
+  api:
+    key: ${STRIPE_API_KEY}
+    product: ${STRIPE_10_EURO_PRODUCT_ID}

@@ -31,8 +31,6 @@ class UserService : OidcUserService() {
     lateinit var loginRepository: LoginRepository
 
     fun login(authorities: Collection<GrantedAuthority>, attributes: Map<String, Any>, idToken: String): OauthUser {
-        val login = Login()
-
         val email = attributes["email"] as String
         var foundUser = userRepository.findByEmail(email)
 
