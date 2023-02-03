@@ -7,6 +7,7 @@ import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.extern.slf4j.Slf4j
 import net.bosowski.chattergpt.data.models.CreditPurchase
+import net.bosowski.chattergpt.data.models.OauthUser
 import net.bosowski.chattergpt.data.repositories.CreditPurchaseRepository
 import net.bosowski.chattergpt.data.repositories.UserRepository
 import org.slf4j.LoggerFactory
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser
+import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -42,7 +44,7 @@ class CreditController {
     val log = LoggerFactory.getLogger(this::class.java)
 
     @GetMapping("/purchase")
-    fun purchase(): RedirectView {
+    fun purchase(oidcUser: OauthUser): RedirectView {
         Stripe.apiKey = stripeApiKey
         val sessionCreateParams = SessionCreateParams.builder()
             .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
@@ -55,7 +57,7 @@ class CreditController {
                     .setPrice(stripeProduct)
                     .build()
             )
-            .build();
+            .build()
 
         val session = Session.create(sessionCreateParams)
         val redirectView = RedirectView(session.url)
@@ -64,35 +66,31 @@ class CreditController {
         val creditPurchase = CreditPurchase()
         val authentication = SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken
         val authenticatedUser = authentication.principal as DefaultOidcUser
-        val foundUser = userRepository.findByEmail(authenticatedUser.idToken.claims["email"].toString())
-        if(foundUser != null){
-            creditPurchase.oauthUser = foundUser
-            creditPurchase.credits = 10f    // todo: change this.
-            creditPurchase.sessionId = session.id
-            creditPurchaseRepository.save(creditPurchase)
+//        val foundUser = userRepository.findByEmail(authenticatedUser.idToken.claims["email"].toString())
+//        if (foundUser != null) {
+//            creditPurchase.oauthUser = foundUser
+//            creditPurchase.credits = 10f    // todo: change this.
+//            creditPurchase.sessionId = session.id
+//            creditPurchaseRepository.save(creditPurchase)
             return redirectView
-        }
-        else{
-            throw Exception("User not found")
-        }
+//        } else {
+//            throw Exception("User not found")
+//        }
     }
 
     @GetMapping("/success")
     fun success(request: HttpServletRequest?, @RequestBody(required = false) body: String?): RedirectView {
         var response = Session.retrieve(request?.getParameter("session_id"))
+        log.info(response.toString())
         var creditPurchase = creditPurchaseRepository.findBySessionId(response.id)
-        if(creditPurchase != null){
-            if(response.status == "complete"){
-                creditPurchase.completed = true
-            }
-            if(response.paymentStatus == "paid"){
+        if (creditPurchase != null && response.status == "complete" && creditPurchase.oauthUser != null) {
+            if (response.paymentStatus == "paid") {
                 creditPurchase.successful = true
             }
+            creditPurchase.completed = true
             creditPurchase.oauthUser!!.availableCredits += creditPurchase.credits!!
             creditPurchaseRepository.save(creditPurchase)
-//            userRepository.save(creditPurchase.oauthUser!!)
         }
-        log.info(response.toString())
         return RedirectView("/")
     }
 

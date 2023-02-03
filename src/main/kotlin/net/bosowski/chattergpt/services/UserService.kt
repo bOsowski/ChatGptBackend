@@ -1,9 +1,6 @@
 package net.bosowski.chattergpt.services
 
-import net.bosowski.chattergpt.data.models.Login
-import net.bosowski.chattergpt.data.models.OauthAttribute
-import net.bosowski.chattergpt.data.models.OauthAuthority
-import net.bosowski.chattergpt.data.models.OauthUser
+import net.bosowski.chattergpt.data.models.*
 import net.bosowski.chattergpt.data.repositories.OauthAttributeRepository
 import net.bosowski.chattergpt.data.repositories.OauthAuthorityRepository
 import net.bosowski.chattergpt.data.repositories.LoginRepository
@@ -12,8 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
+import org.springframework.security.oauth2.client.userinfo.DefaultReactiveOAuth2UserService
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Service
+import org.springframework.util.Assert
+import java.util.*
+import kotlin.collections.ArrayList
 
 @Service
 class UserService : OidcUserService() {
@@ -30,34 +32,37 @@ class UserService : OidcUserService() {
     @Autowired
     lateinit var loginRepository: LoginRepository
 
+    private val oauth2UserService = DefaultOAuth2UserService()
+
+
     fun login(authorities: Collection<GrantedAuthority>, attributes: Map<String, Any>, idToken: String): OauthUser {
         val email = attributes["email"] as String
-        var foundUser = userRepository.findByEmail(email)
+//        var foundUser = userRepository.findByEmail(email)
 
         val oauthAttributes = ArrayList<OauthAttribute>()
         attributes.forEach {
             oauthAttributes.add(OauthAttribute(it.key, it.value.toString()))
         }
 
-        if (foundUser != null) {
-            attributeRepository.findAllByUserIdAndActiveTrue(foundUser.id!!).forEach { existingAttribute ->
-                val newCorrespondingAttribute =
-                    oauthAttributes.find { existingAttribute.attributeKey == it.attributeKey }
-                if (newCorrespondingAttribute?.attributeValue != existingAttribute.attributeValue) {
-                    existingAttribute.active = false
-                    attributeRepository.save(existingAttribute)
-                    newCorrespondingAttribute!!.user = foundUser
-                    attributeRepository.save(newCorrespondingAttribute)
-                }
-            }
-            foundUser.oauthAttributes =attributeRepository.findAllByUserIdAndActiveTrue(foundUser.id!!)
-            registerLogin(foundUser)
-            return foundUser
-        }
+//        if (foundUser != null) {
+//            attributeRepository.findAllByUserIdAndActiveTrue(foundUser.id!!).forEach { existingAttribute ->
+//                val newCorrespondingAttribute =
+//                    oauthAttributes.find { existingAttribute.attributeKey == it.attributeKey }
+//                if (newCorrespondingAttribute?.attributeValue != existingAttribute.attributeValue) {
+//                    existingAttribute.active = false
+//                    attributeRepository.save(existingAttribute)
+//                    newCorrespondingAttribute!!.user = foundUser
+//                    attributeRepository.save(newCorrespondingAttribute)
+//                }
+//            }
+//            foundUser.oauthAttributes =attributeRepository.findAllByUserIdAndActiveTrue(foundUser.id!!)
+//            registerLogin(foundUser)
+//            return foundUser
+//        }
 
         val userAuthorities = ArrayList<OauthAuthority>()
         val existingAuthorities = authorityRepository.findAll()
-        authorities.forEach{ grantedAuthority ->
+        authorities.forEach { grantedAuthority ->
             val existingAuthority = existingAuthorities.find { it.authority == grantedAuthority.authority }
             if (existingAuthority == null) {
                 val newAuthority = OauthAuthority(grantedAuthority.authority)
@@ -71,26 +76,29 @@ class UserService : OidcUserService() {
         val user = OauthUser(
             oauthAttributes = oauthAttributes,
             oauthAuthorities = userAuthorities,
-            email = email,
-            firstName = attributes["given_name"] as String,
-            lastName = attributes["family_name"] as String
         )
 
         val newUser = userRepository.save(user)
-        oauthAttributes.forEach { it.user = newUser; attributeRepository.save(it) }
         registerLogin(newUser)
         return newUser
     }
 
-    private fun registerLogin(oauthUser: OauthUser){
+    private fun registerLogin(oauthUser: OauthUser) {
         loginRepository.save(Login(oauthUser))
     }
 
-
     override fun loadUser(userRequest: OidcUserRequest?): OidcUser {
-        val oidcUser = super.loadUser(userRequest)
-        login(oidcUser.authorities, oidcUser.attributes, oidcUser.idToken.tokenValue)
-        return oidcUser
+        val loadedUser = oauth2UserService.loadUser(userRequest)
+        val oauthUser = OauthUser()
+        oauthUser.id = userRequest?.clientRegistration?.clientId
+        oauthUser.oauthAttributes = loadedUser.attributes.map { OauthAttribute(it.key, it.value?.toString()) }
+        oauthUser.oauthAuthorities = loadedUser.authorities.map { OauthAuthority(it.authority) }
+        oauthUser.oauthToken = OauthToken(
+            userRequest?.idToken?.tokenValue!!,
+            Date.from(userRequest.accessToken.issuedAt),
+            Date.from(userRequest.accessToken.expiresAt)
+        )
+        return userRepository.save(oauthUser)
     }
 
 }

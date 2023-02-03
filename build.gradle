@@ -47,6 +47,10 @@ dependencies {
   implementation 'javax.validation:validation-api:2.0.1.Final'
 
   implementation "com.stripe:stripe-java:22.7.0"
+  testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: '5.7.6'
+
+
+
 }
 
 tasks.withType(KotlinCompile) {

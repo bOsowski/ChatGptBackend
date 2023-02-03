@@ -20,16 +20,16 @@ class OauthAttribute(
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
-    open var id: Long? = null
+    var id: Long? = null
 
-    @NotNull
-    var active: Boolean = true
+//    @NotNull
+//    var active: Boolean = true
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    @NotNull
-    lateinit var user: OauthUser
+//    @ManyToOne
+//    @JoinColumn(name = "user_id")
+//    @NotNull
+//    lateinit var user: OauthUser
 
-    @NotNull
-    var date = Date()
+//    @NotNull
+//    var date = Date()
 }
