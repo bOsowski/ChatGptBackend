@@ -13,6 +13,7 @@ import net.bosowski.chattergpt.data.repositories.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser
@@ -44,7 +45,7 @@ class CreditController {
     val log = LoggerFactory.getLogger(this::class.java)
 
     @GetMapping("/purchase")
-    fun purchase(oidcUser: OauthUser): RedirectView {
+    fun purchase(@AuthenticationPrincipal user: OauthUser): RedirectView {
         Stripe.apiKey = stripeApiKey
         val sessionCreateParams = SessionCreateParams.builder()
             .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
@@ -64,18 +65,11 @@ class CreditController {
         redirectView.setStatusCode(HttpStatus.SEE_OTHER)
 
         val creditPurchase = CreditPurchase()
-        val authentication = SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken
-        val authenticatedUser = authentication.principal as DefaultOidcUser
-//        val foundUser = userRepository.findByEmail(authenticatedUser.idToken.claims["email"].toString())
-//        if (foundUser != null) {
-//            creditPurchase.oauthUser = foundUser
-//            creditPurchase.credits = 10f    // todo: change this.
-//            creditPurchase.sessionId = session.id
-//            creditPurchaseRepository.save(creditPurchase)
-            return redirectView
-//        } else {
-//            throw Exception("User not found")
-//        }
+        creditPurchase.oauthUser = user
+        creditPurchase.credits = 10f    // todo: change this.
+        creditPurchase.sessionId = session.id
+        creditPurchaseRepository.save(creditPurchase)
+        return redirectView
     }
 
     @GetMapping("/success")

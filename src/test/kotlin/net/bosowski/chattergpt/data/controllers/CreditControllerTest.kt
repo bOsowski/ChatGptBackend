@@ -1,6 +1,7 @@
 package net.bosowski.chattergpt.data.controllers
 
 import net.bosowski.chattergpt.data.models.OauthUser
+import net.bosowski.chattergpt.data.repositories.UserRepository
 import org.apache.catalina.security.SecurityConfig
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -31,31 +32,15 @@ class CreditControllerTest {
     private lateinit var creditController: CreditController
 
     @Autowired
-    private lateinit var context: WebApplicationContext
-
-    private lateinit var mvc: MockMvc
-
-    @BeforeEach
-    fun setup() {
-        mvc = MockMvcBuilders
-            .webAppContextSetup(context)
-            .apply<DefaultMockMvcBuilder>(springSecurity())
-            .build()
-    }
+    private lateinit var userRepository: UserRepository
 
     @Test
     @WithMockUser
     fun purchase() {
-        mvc.get("/endpoint") {
-            with(
-                oidcLogin()
-                    .authorities(
-                        SimpleGrantedAuthority("ROLE_USER"),
-                    )
-
-            )
-        }
-//        var redirectView = creditController.purchase()
+        val user = OauthUser()
+        user.id = "test_123"
+        userRepository.save(user)
+        var redirectView = creditController.purchase(user)
     }
 
     @Test
