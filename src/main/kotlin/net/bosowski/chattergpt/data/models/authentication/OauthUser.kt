@@ -72,4 +72,22 @@ class OauthUser : OidcUser {
             this.attributes
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as OauthUser
+
+        if (oauthId != other.oauthId) return false
+        if (availableCredits != other.availableCredits) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = oauthId?.hashCode() ?: 0
+        result = 31 * result + availableCredits.hashCode()
+        return result
+    }
 }

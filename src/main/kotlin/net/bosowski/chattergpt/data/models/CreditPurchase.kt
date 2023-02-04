@@ -8,7 +8,15 @@ import javax.validation.constraints.NotNull
 
 @Data
 @Entity
-class CreditPurchase {
+class CreditPurchase(
+    @ManyToOne
+    @JoinColumn(name = "oauth_user_id")
+    var oauthUser: OauthUser,
+    @NotNull
+    var credits: Float,
+    @NotNull
+    var sessionId: String? = null
+) {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
@@ -16,19 +24,6 @@ class CreditPurchase {
 
     @NotNull
     val date = Date()
-
-    @NotNull
-    var credits: Float? = null
-
-    @ManyToOne
-    @JoinColumn(name = "oauth_user_id")
-    var oauthUser: OauthUser? = null
-
-    @NotNull
-    var sessionId: String? = null
-
-    @NotNull
-    var completed = false
 
     var successful: Boolean? = null
 }

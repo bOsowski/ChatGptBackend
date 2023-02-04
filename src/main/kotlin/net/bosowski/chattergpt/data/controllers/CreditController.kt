@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.servlet.view.RedirectView
@@ -59,25 +60,24 @@ class CreditController {
         val redirectView = RedirectView(session.url)
         redirectView.setStatusCode(HttpStatus.SEE_OTHER)
 
-        val creditPurchase = CreditPurchase()
-        creditPurchase.oauthUser = user
-        creditPurchase.credits = 10f    // todo: change this.
-        creditPurchase.sessionId = session.id
+        val creditPurchase = CreditPurchase(user, 10f, session.id)
         creditPurchaseRepository.save(creditPurchase)
         return redirectView
     }
 
     @GetMapping("/success")
-    fun success(request: HttpServletRequest?, @RequestBody(required = false) body: String?): RedirectView {
-        var response = Session.retrieve(request?.getParameter("session_id"))
+    fun success(request: HttpServletRequest?, @AuthenticationPrincipal user: OauthUser): RedirectView {
+        val response = Session.retrieve(request?.getParameter("session_id"))
         log.info(response.toString())
-        var creditPurchase = creditPurchaseRepository.findBySessionId(response.id)
-        if (creditPurchase != null && response.status == "complete" && creditPurchase.oauthUser != null) {
+        val creditPurchase = creditPurchaseRepository.findBySessionId(response.id)
+        if (creditPurchase != null && response.status == "complete" && creditPurchase.oauthUser == user) {
             if (response.paymentStatus == "paid") {
                 creditPurchase.successful = true
+                creditPurchase.oauthUser.availableCredits += creditPurchase.credits
             }
-            creditPurchase.completed = true
-            creditPurchase.oauthUser!!.availableCredits += creditPurchase.credits!!
+            else{
+                creditPurchase.successful = false
+            }
             creditPurchaseRepository.save(creditPurchase)
         }
         return RedirectView("/")

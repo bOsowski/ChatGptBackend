@@ -25,7 +25,7 @@ class CreditControllerTest {
         val user = OauthUser()
         user.oauthId = "test_123"
         userRepository.save(user)
-        var redirectView = creditController.purchase(user)
+        val redirectView = creditController.purchase(user)
         assert(redirectView.url?.contains("stripe.com") == true)
     }
 
