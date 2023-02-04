@@ -1,6 +1,6 @@
 package net.bosowski.chattergpt
 
-import net.bosowski.chattergpt.services.UserService
+import net.bosowski.chattergpt.services.authentication.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

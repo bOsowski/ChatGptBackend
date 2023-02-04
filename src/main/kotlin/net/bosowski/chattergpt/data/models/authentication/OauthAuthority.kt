@@ -1,9 +1,10 @@
-package net.bosowski.chattergpt.data.models
+package net.bosowski.chattergpt.data.models.authentication
 
 import lombok.AllArgsConstructor
 import lombok.Data
 import lombok.NoArgsConstructor
 import org.springframework.security.core.GrantedAuthority
+import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
@@ -24,5 +25,8 @@ class OauthAuthority(
     override fun getAuthority(): String {
         return oauthAuthority
     }
+
+    @NotNull
+    var date = Date()
 
 }

@@ -21,3 +21,8 @@ spring:
 logging:
   level:
     web: debug
+
+stripe:
+  api:
+    key: ${STRIPE_API_KEY}
+    product: ${STRIPE_10_EURO_PRODUCT_ID}

@@ -1,18 +1,21 @@
 package net.bosowski.chattergpt.data.models
 
-import lombok.AllArgsConstructor
 import lombok.Data
+import net.bosowski.chattergpt.data.models.authentication.OauthUser
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-@Entity
 @Data
-@AllArgsConstructor
-class Login(
+@Entity
+class CreditPurchase(
     @ManyToOne
     @JoinColumn(name = "oauth_user_id")
-    var oauthUser: OauthUser? = null
+    var oauthUser: OauthUser,
+    @NotNull
+    var credits: Float,
+    @NotNull
+    var sessionId: String? = null
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -20,5 +23,7 @@ class Login(
     var id: Long? = null
 
     @NotNull
-    var date: Date = Date()
+    val date = Date()
+
+    var successful: Boolean? = null
 }
