@@ -3,6 +3,8 @@ package net.bosowski.chattergpt.data.models.authentication
 import lombok.AllArgsConstructor
 import lombok.Data
 import lombok.NoArgsConstructor
+import org.hibernate.annotations.LazyCollection
+import org.hibernate.annotations.LazyCollectionOption
 import org.jetbrains.annotations.NotNull
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.core.oidc.OidcIdToken
@@ -16,10 +18,14 @@ import javax.persistence.*
 @Entity
 class OauthUser : OidcUser {
     @OneToMany(cascade = [CascadeType.ALL])
-    var oauthAttributes: List<OauthAttribute> = ArrayList()
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @JoinColumn(name = "oauth_user_id")
+    var oauthAttributes: MutableList<OauthAttribute> = ArrayList()
 
     @OneToMany(cascade = [CascadeType.ALL])
-    var oauthAuthorities: List<OauthAuthority> = ArrayList()
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @JoinColumn(name = "oauth_user_id")
+    var oauthAuthorities: MutableList<OauthAuthority> = ArrayList()
 
     @Id
     @NotNull
@@ -27,6 +33,7 @@ class OauthUser : OidcUser {
     var id: Long? = null
 
     @NotNull
+    @Column(unique = true)
     var oauthId: String? = null
 
     @NotNull
@@ -37,19 +44,19 @@ class OauthUser : OidcUser {
 
     constructor()
     constructor(
-        oauthAttributes: List<OauthAttribute>,
-        oauthAuthorities: List<OauthAuthority>,
+        oauthAttributes: MutableList<OauthAttribute>,
+        oauthAuthorities: MutableList<OauthAuthority>,
     ) : this() {
         this.oauthAttributes = oauthAttributes
         this.oauthAuthorities = oauthAuthorities
     }
 
     override fun getName(): String {
-        return oauthAttributes.find { it.attributeKey == "name" }?.attributeValue ?: ""
+        return oauthAttributes.find { it.attributeKey == "name" && it.active }?.attributeValue ?: ""
     }
 
     override fun getAttributes(): Map<String?, String> {
-        return oauthAttributes.associate { it.attributeKey to it.attributeValue.toString() }
+        return oauthAttributes.filter { it.active }.associate { it.attributeKey to it.attributeValue.toString() }
     }
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
@@ -57,7 +64,7 @@ class OauthUser : OidcUser {
     }
 
     override fun getClaims(): MutableMap<String?, Any> {
-        return oauthAttributes.associate { it.attributeKey to (it.attributeValue as Any) }.toMutableMap()
+        return oauthAttributes.filter { it.active }.associate { it.attributeKey to (it.attributeValue as Any) }.toMutableMap()
     }
 
     override fun getUserInfo(): OidcUserInfo {

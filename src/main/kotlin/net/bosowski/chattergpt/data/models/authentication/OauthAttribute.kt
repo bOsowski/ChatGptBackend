@@ -21,4 +21,10 @@ class OauthAttribute(
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
     var id: Long? = null
+
+    @NotNull
+    var active = true
+
+    @NotNull
+    var date = Date()
 }
