@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.data.models
+package net.bosowski.chattergpt.data.models.authentication
 
 import lombok.AllArgsConstructor
 import lombok.Data
@@ -8,9 +8,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.core.oidc.OidcIdToken
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
-import org.springframework.security.oauth2.core.user.OAuth2User
 import javax.persistence.*
-import java.util.Date
 
 @Data
 @AllArgsConstructor
@@ -25,7 +23,11 @@ class OauthUser : OidcUser {
 
     @Id
     @NotNull
-    var id: String? = null
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    var id: Long? = null
+
+    @NotNull
+    var oauthId: String? = null
 
     @NotNull
     var availableCredits: Float = 0f
@@ -33,6 +35,7 @@ class OauthUser : OidcUser {
     @OneToOne(cascade = [CascadeType.ALL])
     var oauthToken: OauthToken? = null
 
+    constructor()
     constructor(
         oauthAttributes: List<OauthAttribute>,
         oauthAuthorities: List<OauthAuthority>,
@@ -41,13 +44,11 @@ class OauthUser : OidcUser {
         this.oauthAuthorities = oauthAuthorities
     }
 
-    constructor()
-
     override fun getName(): String {
         return oauthAttributes.find { it.attributeKey == "name" }?.attributeValue ?: ""
     }
 
-    override fun getAttributes(): Map<String?, String>? {
+    override fun getAttributes(): Map<String?, String> {
         return oauthAttributes.associate { it.attributeKey to it.attributeValue.toString() }
     }
 

@@ -1,19 +1,17 @@
-package net.bosowski.chattergpt.services
+package net.bosowski.chattergpt.services.authentication
 
-import net.bosowski.chattergpt.data.models.*
-import net.bosowski.chattergpt.data.repositories.OauthAttributeRepository
-import net.bosowski.chattergpt.data.repositories.OauthAuthorityRepository
-import net.bosowski.chattergpt.data.repositories.LoginRepository
-import net.bosowski.chattergpt.data.repositories.UserRepository
+import net.bosowski.chattergpt.data.models.authentication.*
+import net.bosowski.chattergpt.data.repositories.authentication.OauthAttributeRepository
+import net.bosowski.chattergpt.data.repositories.authentication.OauthAuthorityRepository
+import net.bosowski.chattergpt.data.repositories.authentication.LoginRepository
+import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
-import org.springframework.security.oauth2.client.userinfo.DefaultReactiveOAuth2UserService
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Service
-import org.springframework.util.Assert
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -90,7 +88,7 @@ class UserService : OidcUserService() {
     override fun loadUser(userRequest: OidcUserRequest?): OidcUser {
         val loadedUser = oauth2UserService.loadUser(userRequest)
         val oauthUser = OauthUser()
-        oauthUser.id = userRequest?.clientRegistration?.clientId
+        oauthUser.oauthId = userRequest?.clientRegistration?.clientId
         oauthUser.oauthAttributes = loadedUser.attributes.map { OauthAttribute(it.key, it.value?.toString()) }
         oauthUser.oauthAuthorities = loadedUser.authorities.map { OauthAuthority(it.authority) }
         oauthUser.oauthToken = OauthToken(

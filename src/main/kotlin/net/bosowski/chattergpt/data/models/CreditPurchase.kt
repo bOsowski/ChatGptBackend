@@ -1,6 +1,7 @@
 package net.bosowski.chattergpt.data.models
 
 import lombok.Data
+import net.bosowski.chattergpt.data.models.authentication.OauthUser
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull

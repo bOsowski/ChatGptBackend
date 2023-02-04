@@ -11,7 +11,7 @@ class ModelRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
-    open var id: Long? = null
+    var id: Long? = null
 
     @NotNull
     @Column(columnDefinition = "text")

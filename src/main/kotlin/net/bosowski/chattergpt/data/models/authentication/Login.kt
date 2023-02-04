@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.data.models
+package net.bosowski.chattergpt.data.models.authentication
 
 import lombok.AllArgsConstructor
 import lombok.Data

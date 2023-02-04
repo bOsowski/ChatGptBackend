@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.data.models
+package net.bosowski.chattergpt.data.models.authentication
 
 import lombok.AllArgsConstructor
 import lombok.Data
@@ -21,15 +21,4 @@ class OauthAttribute(
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
     var id: Long? = null
-
-//    @NotNull
-//    var active: Boolean = true
-
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    @NotNull
-//    lateinit var user: OauthUser
-
-//    @NotNull
-//    var date = Date()
 }

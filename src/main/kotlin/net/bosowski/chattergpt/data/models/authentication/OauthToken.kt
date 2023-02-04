@@ -1,8 +1,6 @@
-package net.bosowski.chattergpt.data.models
+package net.bosowski.chattergpt.data.models.authentication
 
 import lombok.Data
-import org.springframework.security.oauth2.core.oidc.OidcIdToken
-import java.time.Instant
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
