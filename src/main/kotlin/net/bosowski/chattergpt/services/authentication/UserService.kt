@@ -11,9 +11,12 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.core.oidc.OidcIdToken
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.view.RedirectView
 import java.util.*
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 //@Controller
 @RestController
@@ -33,10 +36,17 @@ class UserService : OidcUserService() {
     }
 
     @GetMapping("/oauth/token")
-    fun getToken(@AuthenticationPrincipal user: OauthUser): OidcIdToken {
-        return user.idToken
+    fun getToken(@AuthenticationPrincipal user: OauthUser): RedirectView {
+        return RedirectView("https://accounts.google.com/o/oauth2/auth")
     }
 
+    @GetMapping("/oauth/callback")
+    fun oauthCallback(request: HttpServletRequest, response: HttpServletResponse) {
+        val jwtToken = "generated_jwt_token"
+        val redirectUrl = "chrome-extension://oimihdlbjgcjllfogekhoglpdgakjgoj/popup.html?jwt_token=$jwtToken"
+
+        response.sendRedirect(redirectUrl)
+    }
 
     override fun loadUser(userRequest: OidcUserRequest?): OidcUser {
         val loadedUser = oauth2UserService.loadUser(userRequest)
@@ -60,9 +70,9 @@ class UserService : OidcUserService() {
         }
         user.oauthAuthorities = loadedUser.authorities.map { OauthAuthority(it.authority) }.toMutableList()
         user.oauthToken = OauthToken(
-            userRequest?.accessToken?.tokenValue!!,
-            Date.from(userRequest.accessToken.issuedAt),
-            Date.from(userRequest.accessToken.expiresAt)
+            userRequest?.idToken?.tokenValue!!,
+            Date.from(userRequest.idToken.issuedAt),
+            Date.from(userRequest.idToken.expiresAt)
         )
         userRepository.save(user)
         val login = Login(user)

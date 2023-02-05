@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.data.controllers
+package net.bosowski.chattergpt.controllers
 
 import org.springframework.beans.factory.annotation.Value
 
