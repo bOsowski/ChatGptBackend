@@ -34,12 +34,13 @@ class OauthUser : OidcUser {
 
     @NotNull
     @Column(unique = true)
-    var oauthId: String? = null
+    var username: String? = null
 
     @NotNull
     var availableCredits: Float = 0f
 
     @OneToOne(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "oauth_token_id")
     var oauthToken: OauthToken? = null
 
     constructor()
@@ -86,14 +87,14 @@ class OauthUser : OidcUser {
 
         other as OauthUser
 
-        if (oauthId != other.oauthId) return false
+        if (username != other.username) return false
         if (availableCredits != other.availableCredits) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = oauthId?.hashCode() ?: 0
+        var result = username?.hashCode() ?: 0
         result = 31 * result + availableCredits.hashCode()
         return result
     }

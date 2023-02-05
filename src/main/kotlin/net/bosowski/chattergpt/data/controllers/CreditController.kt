@@ -28,9 +28,6 @@ class CreditController {
     @Autowired
     lateinit var creditPurchaseRepository: CreditPurchaseRepository
 
-    @Autowired
-    lateinit var userRepository: UserRepository
-
     @Value("\${stripe.api.key}")
     lateinit var stripeApiKey: String
 
