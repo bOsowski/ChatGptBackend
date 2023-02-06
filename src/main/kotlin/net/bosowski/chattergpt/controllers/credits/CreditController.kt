@@ -6,7 +6,7 @@ import com.stripe.Stripe;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.extern.slf4j.Slf4j
-import net.bosowski.chattergpt.data.models.CreditPurchase
+import net.bosowski.chattergpt.data.models.credits.CreditPurchase
 import net.bosowski.chattergpt.data.models.authentication.OauthUser
 import net.bosowski.chattergpt.data.repositories.CreditPurchaseRepository
 import org.slf4j.LoggerFactory

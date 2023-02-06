@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.data.models
+package net.bosowski.chattergpt.data.models.ai
 
 import lombok.Data
 import org.jetbrains.annotations.NotNull
