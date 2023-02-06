@@ -8,7 +8,7 @@ import com.stripe.param.checkout.SessionCreateParams;
 import lombok.extern.slf4j.Slf4j
 import net.bosowski.chattergpt.data.models.credits.CreditPurchase
 import net.bosowski.chattergpt.data.models.authentication.OauthUser
-import net.bosowski.chattergpt.data.repositories.CreditPurchaseRepository
+import net.bosowski.chattergpt.data.repositories.credits.CreditPurchaseRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
