@@ -37,7 +37,7 @@ class AIService {
     fun getResponse(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<String> {
         val email = jwt.claims["email"] as String
         val oauthUser = userRepository.findByUsername(email)
-        if(oauthUser == null){
+        if(oauthUser == null) {
             return ResponseEntity("User not registered.", org.springframework.http.HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity("Hello world!", org.springframework.http.HttpStatus.OK)

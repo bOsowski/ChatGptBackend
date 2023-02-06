@@ -67,12 +67,12 @@ class CreditController {
         val response = Session.retrieve(request?.getParameter("session_id"))
         log.info(response.toString())
         val creditPurchase = creditPurchaseRepository.findBySessionId(response.id)
-        if (creditPurchase != null && response.status == "complete" && creditPurchase.oauthUser == user) {
-            if (response.paymentStatus == "paid") {
+        if(creditPurchase != null && response.status == "complete" && creditPurchase.oauthUser == user) {
+            if(response.paymentStatus == "paid") {
                 creditPurchase.successful = true
                 creditPurchase.oauthUser.availableCredits += creditPurchase.credits
             }
-            else{
+            else {
                 creditPurchase.successful = false
             }
             creditPurchaseRepository.save(creditPurchase)

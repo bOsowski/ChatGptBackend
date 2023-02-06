@@ -14,15 +14,8 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-        provider:
-            google:
-                authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-                token-uri: https://oauth2.googleapis.com/token
-                user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
-                user-name-attribute: sub
       resourceserver:
         jwt:
-#          key-value: classpath:simple.pub
           issuer-uri: https://accounts.google.com
           jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
   devtools:
