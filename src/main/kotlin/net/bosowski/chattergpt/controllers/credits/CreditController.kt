@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.controllers
+package net.bosowski.chattergpt.controllers.credits
 
 import org.springframework.beans.factory.annotation.Value
 
@@ -9,15 +9,12 @@ import lombok.extern.slf4j.Slf4j
 import net.bosowski.chattergpt.data.models.CreditPurchase
 import net.bosowski.chattergpt.data.models.authentication.OauthUser
 import net.bosowski.chattergpt.data.repositories.CreditPurchaseRepository
-import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.servlet.view.RedirectView
 import javax.servlet.http.HttpServletRequest
 

@@ -1,5 +1,6 @@
 package net.bosowski.chattergpt.services.ai
 
+import net.bosowski.chattergpt.controllers.ai.AIService
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*

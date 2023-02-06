@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.services.ai
+package net.bosowski.chattergpt.controllers.ai
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.bosowski.chattergpt.data.models.authentication.OauthUser

@@ -1,6 +1,6 @@
 package net.bosowski.chattergpt.data.controllers
 
-import net.bosowski.chattergpt.controllers.CreditController
+import net.bosowski.chattergpt.controllers.credits.CreditController
 import net.bosowski.chattergpt.data.models.authentication.OauthUser
 import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
 import org.junit.jupiter.api.Test
