@@ -1,9 +1,8 @@
 package net.bosowski.chattergpt.services.ai
 
-import net.bosowski.chattergpt.controllers.ai.AIService
+import net.bosowski.chattergpt.controllers.api.AIService
 import org.junit.jupiter.api.Test
 
-import org.junit.jupiter.api.Assertions.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 

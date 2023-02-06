@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.controllers.ai
+package net.bosowski.chattergpt.controllers.api
 
 import net.bosowski.chattergpt.data.models.ai.ChatRequest
 import net.bosowski.chattergpt.data.dtos.ModelRequestDto
@@ -11,12 +11,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.RestTemplate
 import java.util.*
 import javax.servlet.http.HttpServletRequest
 
 @RestController
+@RequestMapping("/api")
 class AIService {
 
     @Value("\${openai.api.url}")
@@ -28,7 +30,7 @@ class AIService {
     @Autowired
     private lateinit var userRepository: UserRepository
 
-    @PostMapping("/api/chat/response")
+    @PostMapping("/chat")
     fun getResponse(@AuthenticationPrincipal jwt: Jwt, @RequestBody chatRequest: ChatRequest): ResponseEntity<String> {
         val email = jwt.claims["email"] as String
         val oauthUser = userRepository.findByUsername(email)
