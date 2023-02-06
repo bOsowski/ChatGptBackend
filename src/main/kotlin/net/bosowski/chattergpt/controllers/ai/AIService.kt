@@ -1,28 +1,20 @@
 package net.bosowski.chattergpt.controllers.ai
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import net.bosowski.chattergpt.data.models.authentication.OauthUser
+import net.bosowski.chattergpt.data.models.ai.ChatRequest
+import net.bosowski.chattergpt.data.dtos.ModelRequestDto
+import net.bosowski.chattergpt.data.dtos.ModelResponseDto
 import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.http.*
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient
-import org.springframework.security.oauth2.common.exceptions.UnauthorizedClientException
 import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.stereotype.Service
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.HttpClientErrorException.Unauthorized
-import org.springframework.web.servlet.view.RedirectView
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
+import org.springframework.web.client.RestTemplate
 import java.util.*
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 class AIService {
@@ -30,17 +22,43 @@ class AIService {
     @Value("\${openai.api.url}")
     private lateinit var openaiApiUrl: String
 
+    @Value("\${openai.api.key}")
+    private lateinit var openaiApiKey: String
+
     @Autowired
     private lateinit var userRepository: UserRepository
 
-    @GetMapping("/api/ai")
-    fun getResponse(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<String> {
+    @PostMapping("/api/chat/response")
+    fun getResponse(@AuthenticationPrincipal jwt: Jwt, @RequestBody chatRequest: ChatRequest): ResponseEntity<String> {
         val email = jwt.claims["email"] as String
         val oauthUser = userRepository.findByUsername(email)
         if(oauthUser == null) {
             return ResponseEntity("User not registered.", org.springframework.http.HttpStatus.UNAUTHORIZED)
         }
-        return ResponseEntity("Hello world!", org.springframework.http.HttpStatus.OK)
+
+        val participants = chatRequest.messages.map { it.sender }.distinct().toMutableList()
+        val prompt = """The below chat is between me and ${participants.filter { it != "Me" }.joinToString(",") }. Create a response as if you were me. Don't use much punctuation and keep in mind that today's date is ${Date()}.
+            
+${chatRequest.messages.joinToString(separator = "\n") { "${it.sender}:${it.message}" }}
+Me:"""
+
+        val modelRequest = ModelRequestDto()
+        modelRequest.model = chatRequest.model
+        modelRequest.prompt = prompt
+        modelRequest.stop = participants.map { "$it:" }.toMutableList()
+
+        val restTemplate = RestTemplate()
+        val headers = HttpHeaders()
+        headers.add("Authorization", "Bearer $openaiApiKey")
+        headers.contentType = MediaType.APPLICATION_JSON
+        val request = HttpEntity(modelRequest, headers)
+        val modelResponse = restTemplate.postForEntity(openaiApiUrl, request, ModelResponseDto::class.java)
+        return ResponseEntity(modelResponse.body?.choices?.first()?.text, org.springframework.http.HttpStatus.OK)
+    }
+
+    @PostMapping("/testing")
+    fun test(request: HttpServletRequest, @RequestBody(required = false) requestBody: String?): ResponseEntity<String> {
+        return ResponseEntity("$requestBody", org.springframework.http.HttpStatus.OK)
     }
 
 }

@@ -14,7 +14,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
 class WebConfiguration {
 
     @Bean
@@ -27,13 +26,15 @@ class WebConfiguration {
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeRequests { authorize ->
             authorize
-                .antMatchers("/api/ai").authenticated()
-                .antMatchers("/", "/login", "/error", "/webjars/**").permitAll().anyRequest().authenticated()
+                .antMatchers("/api/*").authenticated()
+                .antMatchers("/", "/login", "/error", "/webjars/**", "/testing").permitAll().anyRequest().authenticated()
         }.logout {
             it.logoutSuccessUrl("/").permitAll()
         }.exceptionHandling {
             it.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-        }.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
+        }
+//            .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
+            .csrf().disable()
             .oauth2Login { oauth2Login ->
                 oauth2Login.loginPage("/login")
                 oauth2Login.defaultSuccessUrl("/", true)
