@@ -10,5 +10,5 @@ class ModelPricing {
     @Column(name = "name", nullable = false)
     var name: String? = null
 
-    var price: Double = 0.0
+    var price: Float = 0f
 }

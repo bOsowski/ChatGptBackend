@@ -26,7 +26,7 @@ class ChatRequest {
     @OneToOne(cascade = [CascadeType.ALL])
     var apiResponse: ApiResponse? = null;
 
-    var cost: Double = 0.0;
+    var cost: Float = 0f
 
     @ManyToOne
     var oauthUser: OauthUser? = null

@@ -38,7 +38,7 @@ class OauthUser : OidcUser {
     var username: String? = null
 
     @NotNull
-    var availableCredits: Double = 0.0
+    var availableCredits: Float = 0f
 
     @OneToOne(cascade = [CascadeType.ALL])
     @JoinColumn(name = "oauth_token_id")

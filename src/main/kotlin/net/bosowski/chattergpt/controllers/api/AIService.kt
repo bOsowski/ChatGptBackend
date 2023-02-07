@@ -89,20 +89,20 @@ Me:"""
         return restTemplate.postForEntity(openaiApiUrl, request, ApiResponseDto::class.java)
     }
 
-    private fun chargeUser(user: OauthUser, response: ApiResponseDto): Double{
+    private fun chargeUser(user: OauthUser, response: ApiResponseDto): Float{
         val requestCost = getPricePerToken(response.model!!) * response.usage?.total_tokens!!
         user.availableCredits = user.availableCredits - requestCost
         userRepository.save(user)
         return requestCost
     }
 
-    private fun getMaxCost(chatRequest: ChatRequest): Double {
+    private fun getMaxCost(chatRequest: ChatRequest): Float {
         return getPricePerToken(chatRequest.model) * chatRequest.maxTokens
     }
 
-    private fun getPricePerToken(model: String): Double {
+    private fun getPricePerToken(model: String): Float {
         val modelPricing = modelPricingRepository.findById(model).get()
-        return modelPricing.price / 1000.0
+        return modelPricing.price / 1000f
     }
 
     @PostMapping("/testing")
