@@ -2,7 +2,10 @@ package net.bosowski.chattergpt.controllers.api
 
 import net.bosowski.chattergpt.data.models.ai.ChatRequest
 import net.bosowski.chattergpt.data.dtos.ModelRequestDto
-import net.bosowski.chattergpt.data.dtos.ModelResponseDto
+import net.bosowski.chattergpt.data.dtos.ApiResponseDto
+import net.bosowski.chattergpt.data.models.ai.ApiResponse
+import net.bosowski.chattergpt.data.models.authentication.OauthUser
+import net.bosowski.chattergpt.data.repositories.ai.*
 import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -30,11 +33,17 @@ class AIService {
     @Autowired
     private lateinit var userRepository: UserRepository
 
+    @Autowired
+    private lateinit var modelPricingRepository: ModelPricingRepository
+
+    @Autowired
+    private lateinit var chatRequestRepository: ChatRequestRepository
+
     @PostMapping("/chat")
     fun getResponse(@AuthenticationPrincipal jwt: Jwt, @RequestBody chatRequest: ChatRequest): ResponseEntity<String> {
         val email = jwt.claims["email"] as String
-        val oauthUser = userRepository.findByUsername(email)
-        if(oauthUser == null) {
+        val user = userRepository.findByUsername(email)
+        if(user == null) {
             return ResponseEntity("User not registered.", org.springframework.http.HttpStatus.UNAUTHORIZED)
         }
 
@@ -44,18 +53,55 @@ class AIService {
 ${chatRequest.messages.joinToString(separator = "\n") { "${it.sender}:${it.message}" }}
 Me:"""
 
+        if(user.availableCredits < getMaxCost(chatRequest)){
+            chatRequestRepository.save(chatRequest)
+            return ResponseEntity("Not enough credits.", HttpStatus.PAYMENT_REQUIRED)
+        }
+
         val modelRequest = ModelRequestDto()
         modelRequest.model = chatRequest.model
         modelRequest.prompt = prompt
         modelRequest.stop = participants.map { "$it:" }.toMutableList()
 
+        val response = performRequest(modelRequest)
+        val apiResponse = ApiResponse(response.body, user)
+        chatRequest.apiResponse = apiResponse
+
+        if(response.body == null ){
+            chatRequestRepository.save(chatRequest)
+            return ResponseEntity("Invalid response from OpenAI.", HttpStatus.NO_CONTENT)
+        }
+        val modelResponse: ApiResponseDto = response.body!!
+
+        val charge = chargeUser(user, modelResponse)
+        chatRequest.cost = charge
+        chatRequestRepository.save(chatRequest)
+        return ResponseEntity(modelResponse.choices?.first()?.text, HttpStatus.OK)
+    }
+
+    private fun performRequest(modelRequest: ModelRequestDto): ResponseEntity<ApiResponseDto> {
         val restTemplate = RestTemplate()
         val headers = HttpHeaders()
         headers.add("Authorization", "Bearer $openaiApiKey")
         headers.contentType = MediaType.APPLICATION_JSON
         val request = HttpEntity(modelRequest, headers)
-        val modelResponse = restTemplate.postForEntity(openaiApiUrl, request, ModelResponseDto::class.java)
-        return ResponseEntity(modelResponse.body?.choices?.first()?.text, org.springframework.http.HttpStatus.OK)
+        return restTemplate.postForEntity(openaiApiUrl, request, ApiResponseDto::class.java)
+    }
+
+    private fun chargeUser(user: OauthUser, response: ApiResponseDto): Double{
+        val requestCost = getPricePerToken(response.model!!) * response.usage?.total_tokens!!
+        user.availableCredits = user.availableCredits - requestCost
+        userRepository.save(user)
+        return requestCost
+    }
+
+    private fun getMaxCost(chatRequest: ChatRequest): Double {
+        return getPricePerToken(chatRequest.model) * chatRequest.maxTokens
+    }
+
+    private fun getPricePerToken(model: String): Double {
+        val modelPricing = modelPricingRepository.findById(model).get()
+        return modelPricing.price / 1000.0
     }
 
     @PostMapping("/testing")

@@ -53,6 +53,8 @@ dependencies {
 //  implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.0.0-SNAPSHOT'
   implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:2.7.8'
   implementation 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.6.8'
+
+  implementation 'org.flywaydb:flyway-mysql'
 }
 
 tasks.withType(KotlinCompile) {

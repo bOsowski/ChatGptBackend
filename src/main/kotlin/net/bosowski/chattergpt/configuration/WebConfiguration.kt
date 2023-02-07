@@ -51,7 +51,7 @@ class WebConfiguration {
     @Bean
     fun uiFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeRequests { authorize ->
-            authorize.antMatchers("/", "/login", "/error", "/webjars/**", "/testing").permitAll().anyRequest()
+            authorize.antMatchers("/", "/login", "/error", "/webjars/**").permitAll().anyRequest()
                 .authenticated()
         }.logout {
             it.logoutSuccessUrl("/").permitAll()

@@ -4,6 +4,11 @@ spring:
     username: root
     password: ${DATASOURCE_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
+  flyway:
+    user: root
+    password: ${DATASOURCE_PASSWORD}
+    schemas: chattergpt
+    baseline-on-migrate: true
   jpa:
     hibernate:
       ddl-auto: update

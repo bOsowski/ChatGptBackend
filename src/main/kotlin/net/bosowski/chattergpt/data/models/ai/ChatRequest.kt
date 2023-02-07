@@ -1,6 +1,7 @@
 package net.bosowski.chattergpt.data.models.ai;
 
 import lombok.Data;
+import net.bosowski.chattergpt.data.dtos.ApiResponseDto
 import net.minidev.json.annotate.JsonIgnore
 import javax.persistence.*;
 
@@ -17,4 +18,11 @@ class ChatRequest {
     var messages: MutableList<Message> = ArrayList();
 
     var model: String = "text-davinci-003";
+
+    var maxTokens: Int = 150;
+
+    @OneToOne(cascade = [CascadeType.ALL])
+    var apiResponse: ApiResponse? = null;
+
+    var cost: Double = 0.0;
 }

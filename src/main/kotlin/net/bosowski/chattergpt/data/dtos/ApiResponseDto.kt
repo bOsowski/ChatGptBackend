@@ -24,7 +24,7 @@ import lombok.Data
 }
 */
 @Data
-class ModelResponseDto {
+class ApiResponseDto {
     var id: String? = null
     var `object`: String? = null
     var created: Long? = null
