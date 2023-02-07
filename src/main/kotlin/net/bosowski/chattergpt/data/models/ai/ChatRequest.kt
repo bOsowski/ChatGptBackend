@@ -1,7 +1,10 @@
 package net.bosowski.chattergpt.data.models.ai;
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import lombok.Data;
+import lombok.ToString
 import net.bosowski.chattergpt.data.dtos.ApiResponseDto
+import net.bosowski.chattergpt.data.models.authentication.OauthUser
 import net.minidev.json.annotate.JsonIgnore
 import javax.persistence.*;
 
@@ -11,7 +14,6 @@ class ChatRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
-    @JsonIgnore
     var id: Long? = null;
 
     @OneToMany(cascade = [CascadeType.ALL])
@@ -25,4 +27,7 @@ class ChatRequest {
     var apiResponse: ApiResponse? = null;
 
     var cost: Double = 0.0;
+
+    @ManyToOne
+    var oauthUser: OauthUser? = null
 }

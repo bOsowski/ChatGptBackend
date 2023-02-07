@@ -3,6 +3,7 @@ package net.bosowski.chattergpt.data.models.authentication
 import lombok.AllArgsConstructor
 import lombok.Data
 import lombok.NoArgsConstructor
+import lombok.ToString
 import org.hibernate.annotations.LazyCollection
 import org.hibernate.annotations.LazyCollectionOption
 import org.jetbrains.annotations.NotNull

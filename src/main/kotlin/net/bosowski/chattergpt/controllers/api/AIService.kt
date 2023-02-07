@@ -46,6 +46,7 @@ class AIService {
         if(user == null) {
             return ResponseEntity("User not registered.", org.springframework.http.HttpStatus.UNAUTHORIZED)
         }
+        chatRequest.oauthUser = user
 
         val participants = chatRequest.messages.map { it.sender }.distinct().toMutableList()
         val prompt = """The below chat is between me and ${participants.filter { it != "Me" }.joinToString(",") }. Create a response as if you were me. Don't use much punctuation and keep in mind that today's date is ${Date()}.
@@ -64,7 +65,7 @@ Me:"""
         modelRequest.stop = participants.map { "$it:" }.toMutableList()
 
         val response = performRequest(modelRequest)
-        val apiResponse = ApiResponse(response.body, user)
+        val apiResponse = ApiResponse(response.body)
         chatRequest.apiResponse = apiResponse
 
         if(response.body == null ){

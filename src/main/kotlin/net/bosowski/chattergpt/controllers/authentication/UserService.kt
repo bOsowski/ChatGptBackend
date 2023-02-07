@@ -1,6 +1,9 @@
-package net.bosowski.chattergpt.services.authentication
+package net.bosowski.chattergpt.controllers.authentication
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import net.bosowski.chattergpt.data.models.authentication.*
+import net.bosowski.chattergpt.data.repositories.ai.ChatRequestRepository
 import net.bosowski.chattergpt.data.repositories.authentication.LoginRepository
 import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,16 +11,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
-import org.springframework.security.oauth2.core.oidc.OidcIdToken
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.view.RedirectView
 import java.util.*
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 //@Controller
 @RestController
@@ -29,6 +28,9 @@ class UserService: OidcUserService() {
     @Autowired
     lateinit var loginRepository: LoginRepository
 
+    @Autowired
+    lateinit var chatRequestRepository: ChatRequestRepository
+
     private val oauth2UserService = DefaultOAuth2UserService()
 
     @GetMapping("/login")
@@ -37,8 +39,22 @@ class UserService: OidcUserService() {
     }
 
     @GetMapping("/user")
-    fun user(@AuthenticationPrincipal principal: OAuth2User): Map<String?, Any?> {
-        return Collections.singletonMap("name", principal.getAttribute("name"))
+    fun user(@AuthenticationPrincipal principal: OAuth2User): Any {
+        val user = userRepository.findByUsername(principal.attributes["email"] as String) !!
+        val requests = chatRequestRepository.findAllByOauthUser(user)
+        val mapper = ObjectMapper()
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        return mapper.writeValueAsString(
+         linkedMapOf(
+            "credits" to user.availableCredits,
+            "requests" to requests.map {
+                linkedMapOf(
+                    "model" to it.model,
+                    "tokens" to it.apiResponse?.usage?.totalTokens,
+                    "cost" to it.cost,
+                    "response" to it.apiResponse?.choices?.first()?.text
+                )
+            }).toString())
     }
 
     override fun loadUser(userRequest: OidcUserRequest?): OidcUser {

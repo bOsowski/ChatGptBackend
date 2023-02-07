@@ -9,14 +9,13 @@ import javax.persistence.*
 @Entity
 class ApiResponse {
 
-    constructor(apiResponseDto: ApiResponseDto?, user: OauthUser){
+    constructor(apiResponseDto: ApiResponseDto?){
         this.openAiId = apiResponseDto?.id
         this.`object` = apiResponseDto?.`object`
         this.created = apiResponseDto?.created
         this.model = apiResponseDto?.model
         this.choices = apiResponseDto?.choices?.map { Choice(it) }
         this.usage = Usage(apiResponseDto?.usage)
-        this.oauthUser = user
     }
 
     @Id
@@ -37,7 +36,4 @@ class ApiResponse {
 
     @OneToOne(cascade = [CascadeType.ALL])
     var usage: Usage? = null
-
-    @OneToOne
-    var oauthUser: OauthUser? = null
 }
