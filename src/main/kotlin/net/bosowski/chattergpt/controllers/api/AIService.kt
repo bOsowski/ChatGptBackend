@@ -44,7 +44,7 @@ class AIService {
         val email = jwt.claims["email"] as String
         val user = userRepository.findByUsername(email)
         if(user == null) {
-            return ResponseEntity("User not registered.", org.springframework.http.HttpStatus.UNAUTHORIZED)
+            return ResponseEntity("User not registered.", HttpStatus.UNAUTHORIZED)
         }
         chatRequest.oauthUser = user
 
@@ -107,7 +107,7 @@ Me:"""
 
     @PostMapping("/testing")
     fun test(request: HttpServletRequest, @RequestBody(required = false) requestBody: String?): ResponseEntity<String> {
-        return ResponseEntity("$requestBody", org.springframework.http.HttpStatus.OK)
+        return ResponseEntity("Test response.", HttpStatus.OK)
     }
 
 }

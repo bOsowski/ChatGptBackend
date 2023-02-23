@@ -11,12 +11,20 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository
+import org.springframework.web.cors.*
 
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 class WebConfiguration {
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource? {
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", CorsConfiguration().applyPermitDefaultValues())
+        return source
+    }
 
     @Bean
     @Order(HIGHEST_PRECEDENCE)
@@ -26,6 +34,7 @@ class WebConfiguration {
         }.exceptionHandling {
             it.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
         }
+            .cors().configurationSource { CorsConfiguration().applyPermitDefaultValues() }.and()
             .csrf().disable()
             .oauth2ResourceServer().jwt()
         return http.build()
