@@ -21,8 +21,8 @@ import java.util.*
 import javax.servlet.http.HttpServletRequest
 
 @RestController
-@RequestMapping("/api")
-class AIService {
+@RequestMapping("/api/ai")
+class AI {
 
     @Value("\${openai.api.url}")
     private lateinit var openaiApiUrl: String
@@ -39,7 +39,7 @@ class AIService {
     @Autowired
     private lateinit var chatRequestRepository: ChatRequestRepository
 
-    @PostMapping("/chat")
+    @PostMapping("/response")
     fun getResponse(@AuthenticationPrincipal jwt: Jwt, @RequestBody chatRequest: ChatRequest): ResponseEntity<String> {
         val email = jwt.claims["email"] as String
         val user = userRepository.findByUsername(email)
@@ -105,7 +105,7 @@ Me:"""
         return modelPricing.price / 1000f
     }
 
-    @PostMapping("/testing")
+    @PostMapping("/test")
     fun test(request: HttpServletRequest, @RequestBody(required = false) requestBody: String?): ResponseEntity<String> {
         return ResponseEntity("Test response.", HttpStatus.OK)
     }
