@@ -1,5 +1,6 @@
 package net.bosowski.chattergpt.data.controllers
 
+import net.bosowski.chattergpt.controllers.credits.CreditController
 import net.bosowski.chattergpt.data.models.authentication.OauthUser
 import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
 import org.junit.jupiter.api.Test
@@ -23,7 +24,7 @@ class CreditControllerTest {
     @WithMockUser
     fun purchase() {
         val user = OauthUser()
-        user.oauthId = "test_123"
+        user.username = "test_123"
         userRepository.save(user)
         val redirectView = creditController.purchase(user)
         assert(redirectView.url?.contains("stripe.com") == true)

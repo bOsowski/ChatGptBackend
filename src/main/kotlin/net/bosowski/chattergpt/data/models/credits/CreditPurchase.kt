@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.data.models
+package net.bosowski.chattergpt.data.models.credits
 
 import lombok.Data
 import net.bosowski.chattergpt.data.models.authentication.OauthUser

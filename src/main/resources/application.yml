@@ -4,9 +4,14 @@ spring:
     username: root
     password: ${DATASOURCE_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
+  flyway:
+    user: root
+    password: ${DATASOURCE_PASSWORD}
+    schemas: chattergpt
+    baseline-on-migrate: true
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
   security:
     oauth2:
       client:
@@ -14,6 +19,10 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+          jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
   devtools:
     add-properties: true
     livereload:
@@ -21,8 +30,23 @@ spring:
 logging:
   level:
     web: debug
+    org:
+      springframework:
+        security: DEBUG
 
 stripe:
   api:
     key: ${STRIPE_API_KEY}
     product: ${STRIPE_10_EURO_PRODUCT_ID}
+
+openai:
+  api:
+    url: "https://api.openai.com/v1/completions"
+    key: ${OPENAI_API_KEY}
+    models:
+      - "text-davinci-003"
+    max_tokens: 256
+    temperature: 1
+    presence_penalty: 0.6
+    top_p: 1
+    n: 1

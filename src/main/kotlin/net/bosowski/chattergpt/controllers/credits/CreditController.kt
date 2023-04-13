@@ -1,4 +1,4 @@
-package net.bosowski.chattergpt.data.controllers
+package net.bosowski.chattergpt.controllers.credits
 
 import org.springframework.beans.factory.annotation.Value
 
@@ -6,18 +6,15 @@ import com.stripe.Stripe;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.extern.slf4j.Slf4j
-import net.bosowski.chattergpt.data.models.CreditPurchase
+import net.bosowski.chattergpt.data.models.credits.CreditPurchase
 import net.bosowski.chattergpt.data.models.authentication.OauthUser
-import net.bosowski.chattergpt.data.repositories.CreditPurchaseRepository
-import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
+import net.bosowski.chattergpt.data.repositories.credits.CreditPurchaseRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.servlet.view.RedirectView
 import javax.servlet.http.HttpServletRequest
 
@@ -27,9 +24,6 @@ class CreditController {
 
     @Autowired
     lateinit var creditPurchaseRepository: CreditPurchaseRepository
-
-    @Autowired
-    lateinit var userRepository: UserRepository
 
     @Value("\${stripe.api.key}")
     lateinit var stripeApiKey: String
@@ -70,12 +64,12 @@ class CreditController {
         val response = Session.retrieve(request?.getParameter("session_id"))
         log.info(response.toString())
         val creditPurchase = creditPurchaseRepository.findBySessionId(response.id)
-        if (creditPurchase != null && response.status == "complete" && creditPurchase.oauthUser == user) {
-            if (response.paymentStatus == "paid") {
+        if(creditPurchase != null && response.status == "complete" && creditPurchase.oauthUser == user) {
+            if(response.paymentStatus == "paid") {
                 creditPurchase.successful = true
                 creditPurchase.oauthUser.availableCredits += creditPurchase.credits
             }
-            else{
+            else {
                 creditPurchase.successful = false
             }
             creditPurchaseRepository.save(creditPurchase)
