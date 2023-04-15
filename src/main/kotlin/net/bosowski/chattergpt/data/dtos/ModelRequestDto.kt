@@ -27,5 +27,5 @@ class ModelRequestDto {
     var n: Int = 1
     var presence_penalty: Float = 0f
     var stream: Boolean = false
-    var stop: MutableList<String> = ArrayList()
+    var stop: MutableList<String>? = null
 }

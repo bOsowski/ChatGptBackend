@@ -1,9 +1,7 @@
 package net.bosowski.chattergpt.controllers.api
 
-import net.bosowski.chattergpt.data.models.ai.ChatRequest
-import net.bosowski.chattergpt.data.dtos.ModelRequestDto
-import net.bosowski.chattergpt.data.dtos.ApiResponseDto
-import net.bosowski.chattergpt.data.models.ai.ApiResponse
+import net.bosowski.chattergpt.data.dtos.*
+import net.bosowski.chattergpt.data.models.ai.*
 import net.bosowski.chattergpt.data.models.authentication.OauthUser
 import net.bosowski.chattergpt.data.repositories.ai.*
 import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
@@ -37,67 +35,94 @@ class AI {
     private lateinit var modelPricingRepository: ModelPricingRepository
 
     @Autowired
-    private lateinit var chatRequestRepository: ChatRequestRepository
+    private lateinit var modelRequestRepository: ModelRequestRepository
 
-    @PostMapping("/response")
-    fun getResponse(@AuthenticationPrincipal jwt: Jwt, @RequestBody chatRequest: ChatRequest): ResponseEntity<String> {
+    @PostMapping("/chatRequest")
+    fun chatRequest(@AuthenticationPrincipal jwt: Jwt, @RequestBody chatRequestDto: ChatRequestDto): ResponseEntity<String> {
         val email = jwt.claims["email"] as String
         val user = userRepository.findByUsername(email)
         if(user == null) {
             return ResponseEntity("User not registered.", HttpStatus.UNAUTHORIZED)
         }
-        chatRequest.oauthUser = user
 
-        val participants = chatRequest.messages.map { it.sender }.distinct().toMutableList()
+        val participants = chatRequestDto.messages.map { it.sender }.distinct().toMutableList()
         val prompt = """The below chat is between me and ${participants.filter { it != "Me" }.joinToString(",") }. Create a response as if you were me. Don't use much punctuation and keep in mind that today's date is ${Date()}.
             
-${chatRequest.messages.joinToString(separator = "\n") { "${it.sender}:${it.message}" }}
+${chatRequestDto.messages.joinToString(separator = "\n") { "${it.sender}:${it.message}" }}
 Me:"""
 
-        if(user.availableCredits < getMaxCost(chatRequest)){
-            chatRequestRepository.save(chatRequest)
-            return ResponseEntity("Not enough credits.", HttpStatus.PAYMENT_REQUIRED)
-        }
-
-        val modelRequest = ModelRequestDto()
-        modelRequest.model = chatRequest.model
+        val modelRequest = ModelRequest()
         modelRequest.prompt = prompt
         modelRequest.stop = participants.map { "$it:" }.toMutableList()
-
-        val response = performRequest(modelRequest)
-        val apiResponse = ApiResponse(response.body)
-        chatRequest.apiResponse = apiResponse
-
-        if(response.body == null ){
-            chatRequestRepository.save(chatRequest)
-            return ResponseEntity("Invalid response from OpenAI.", HttpStatus.NO_CONTENT)
-        }
-        val modelResponse: ApiResponseDto = response.body!!
-
-        val charge = chargeUser(user, modelResponse)
-        chatRequest.cost = charge
-        chatRequestRepository.save(chatRequest)
-        return ResponseEntity(modelResponse.choices?.first()?.text, HttpStatus.OK)
+        modelRequest.oauthUser = user
+        modelRequest.model = chatRequestDto.model
+        modelRequest.maxTokens = chatRequestDto.maxTokens
+        modelRequest.temperature = chatRequestDto.temperature
+        modelRequestRepository.save(modelRequest)
+        return getResponseFromModelRequest(modelRequest)
     }
 
-    private fun performRequest(modelRequest: ModelRequestDto): ResponseEntity<ApiResponseDto> {
+
+    @PostMapping("/autocompleteRequest")
+    fun getResponse(@AuthenticationPrincipal jwt: Jwt, @RequestBody text: String): ResponseEntity<String> {
+        val email = jwt.claims["email"] as String
+        val user = userRepository.findByUsername(email) ?: return ResponseEntity("User not registered.", HttpStatus.UNAUTHORIZED)
+        val modelRequest = ModelRequest()
+        modelRequest.prompt = "The following is a user input inside of a text field. The autocomplete provides predictions of what the user wants to type.\n" +
+                              "\n" +
+                              "UserInput:Hello, who ar\n" +
+                              "AIAutocomplete:e you?\n" +
+                              "UserInput:"+text+"\n" +
+                              "AIAutocomplete:"
+        modelRequest.stop = mutableListOf("AIAutocomplete:", "UserInput:")
+        modelRequest.oauthUser = user
+        modelRequestRepository.save(modelRequest)
+        return getResponseFromModelRequest(modelRequest)
+//        val response = getResponseFromModelRequest(modelRequest)
+//        return  ResponseEntity(response.body!!.replace("\n", "").replace("\n", ""), response.statusCode)
+    }
+
+    private fun getResponseFromModelRequest(modelRequest: ModelRequest): ResponseEntity<String> {
+        if(modelRequest.oauthUser!!.availableCredits < getMaxCost(modelRequest)){
+            return getNotEnoughCreditsResponse()
+        }
+        val response = performRequest(modelRequest)
+        if(response.body == null ){
+            return ResponseEntity("Invalid response from OpenAI.", HttpStatus.NO_CONTENT)
+        }
+
+        val apiResponseDto: ApiResponseDto = response.body!!
+        return ResponseEntity(apiResponseDto.choices?.first()?.text, HttpStatus.OK)
+    }
+
+    private fun getNotEnoughCreditsResponse(): ResponseEntity<String>{
+        return ResponseEntity("Not enough credits.", HttpStatus.PAYMENT_REQUIRED)
+    }
+
+    private fun performRequest(modelRequest: ModelRequest): ResponseEntity<ApiResponseDto> {
         val restTemplate = RestTemplate()
         val headers = HttpHeaders()
         headers.add("Authorization", "Bearer $openaiApiKey")
         headers.contentType = MediaType.APPLICATION_JSON
-        val request = HttpEntity(modelRequest, headers)
-        return restTemplate.postForEntity(openaiApiUrl, request, ApiResponseDto::class.java)
+        val request = HttpEntity(modelRequest.toModelRequestDto(), headers)
+        val response = restTemplate.postForEntity(openaiApiUrl, request, ApiResponseDto::class.java)
+        val apiResponse = ApiResponse(response.body)
+        modelRequest.apiResponse = apiResponse
+        val charge = chargeUser(modelRequest.oauthUser!!, apiResponse)
+        modelRequest.cost = charge
+        modelRequestRepository.save(modelRequest)
+        return response
     }
 
-    private fun chargeUser(user: OauthUser, response: ApiResponseDto): Float{
-        val requestCost = getPricePerToken(response.model!!) * response.usage?.total_tokens!!
+    private fun chargeUser(user: OauthUser, response: ApiResponse): Float{
+        val requestCost = getPricePerToken(response.model!!) * response.usage?.totalTokens!!
         user.availableCredits = user.availableCredits - requestCost
         userRepository.save(user)
         return requestCost
     }
 
-    private fun getMaxCost(chatRequest: ChatRequest): Float {
-        return getPricePerToken(chatRequest.model) * chatRequest.maxTokens
+    private fun getMaxCost(modelRequest: ModelRequest): Float {
+        return getPricePerToken(modelRequest.model) * modelRequest.maxTokens
     }
 
     private fun getPricePerToken(model: String): Float {

@@ -3,7 +3,6 @@ package net.bosowski.chattergpt.controllers.authentication
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import net.bosowski.chattergpt.data.models.authentication.*
-import net.bosowski.chattergpt.data.repositories.ai.ChatRequestRepository
 import net.bosowski.chattergpt.data.repositories.authentication.LoginRepository
 import net.bosowski.chattergpt.data.repositories.authentication.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,9 +27,6 @@ class UserService: OidcUserService() {
     @Autowired
     lateinit var loginRepository: LoginRepository
 
-    @Autowired
-    lateinit var chatRequestRepository: ChatRequestRepository
-
     private val oauth2UserService = DefaultOAuth2UserService()
 
     @GetMapping("/login")
@@ -41,20 +37,21 @@ class UserService: OidcUserService() {
     @GetMapping("/user")
     fun user(@AuthenticationPrincipal principal: OAuth2User): Any {
         val user = userRepository.findByUsername(principal.attributes["email"] as String) !!
-        val requests = chatRequestRepository.findAllByOauthUser(user)
+//        val requests = chatRequestRepository.findAllByOauthUser(user)
         val mapper = ObjectMapper()
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         return mapper.writeValueAsString(
          linkedMapOf(
-            "credits" to user.availableCredits,
-            "requests" to requests.map {
-                linkedMapOf(
-                    "model" to it.model,
-                    "tokens" to it.apiResponse?.usage?.totalTokens,
-                    "cost" to it.cost,
-                    "response" to it.apiResponse?.choices?.first()?.text
-                )
-            }).toString())
+            "credits" to user.availableCredits
+//            "requests" to requests.map {
+//                linkedMapOf(
+//                    "model" to it.model,
+//                    "tokens" to it.apiResponse?.usage?.totalTokens,
+//                    "cost" to it.cost,
+//                    "response" to it.apiResponse?.choices?.first()?.text
+//                )
+//            }
+         ).toString())
     }
 
     override fun loadUser(userRequest: OidcUserRequest?): OidcUser {
