@@ -9,6 +9,7 @@ spring:
     password: ${DATASOURCE_PASSWORD}
     schemas: chattergpt
     baseline-on-migrate: true
+    enabled: false
   jpa:
     hibernate:
       ddl-auto: update
