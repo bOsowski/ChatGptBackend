@@ -31,7 +31,7 @@ class CreditController {
     @Value("\${stripe.api.product}")
     lateinit var stripeProduct: String
 
-    val baseUrl = "http://localhost:8080"  //ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
+    val baseUrl = "http://chattergpt.net:8080"  //ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
     val log = LoggerFactory.getLogger(this::class.java)
 
     @GetMapping("/purchase")
