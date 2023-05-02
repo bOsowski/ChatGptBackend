@@ -72,10 +72,9 @@ Me:"""
         val email = jwt.claims["email"] as String
         val user = userRepository.findByUsername(email) ?: return ResponseEntity("User not registered.", HttpStatus.UNAUTHORIZED)
         val modelRequest = ModelRequest()
-        modelRequest.prompt =
-            "The user is typing text into a text field on his phone. Your replies should only consist of the prediction. Be creative and try to predict the full contents of the text field, given the following message that is wrapped in quotes:\"${text}\""
+        modelRequest.prompt = text
         modelRequest.oauthUser = user
-        modelRequest.temperature = 0.6f
+        modelRequest.temperature = 0.5f
         modelRequest.n = 3
         modelRequestRepository.save(modelRequest)
         val apiResponse = performRequest(modelRequest)
