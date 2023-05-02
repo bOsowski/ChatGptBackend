@@ -59,20 +59,3 @@ class ModelRequest {
         return modelRequestDto
     }
 }
-
-
-/*
-@Data
-class ModelRequestDto {
-    var model: String = "text-davinci-003"
-    var prompt: String? = null
-    var temperature: Float = 0.9f
-    var max_tokens: Int = 150
-    var top_p: Float = 1f
-    var frequency_penalty: Int = 0
-    var n: Int = 1
-    var presence_penalty: Float = 0f
-    var stream: Boolean = false
-    var stop: MutableList<String> = ArrayList()
-}
- */
