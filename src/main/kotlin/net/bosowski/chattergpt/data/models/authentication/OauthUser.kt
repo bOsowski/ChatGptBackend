@@ -85,13 +85,9 @@ class OauthUser : OidcUser {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-
         other as OauthUser
-
         if (username != other.username) return false
-        if (availableCredits != other.availableCredits) return false
-
-        return true
+        return availableCredits == other.availableCredits
     }
 
     override fun hashCode(): Int {
