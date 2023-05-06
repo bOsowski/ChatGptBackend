@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: "jdbc:mariadb://127.0.0.1:3309/chattergpt"
+    url: "jdbc:mariadb://mariadb:3306/chattergpt"
     username: root
     password: ${DATASOURCE_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
@@ -13,6 +13,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    generate-ddl: true
   security:
     oauth2:
       client:

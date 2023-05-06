@@ -1,14 +1,38 @@
-# Use root/example as user/password credentials
 version: '3.1'
 
 services:
-
-  db:
+  mariadb:
     image: mariadb
     container_name: mariadb_chattergpt
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: "${DATASOURCE_PASSWORD}"
+      MYSQL_DATABASE: "chattergpt"
     ports:
-      - "3309:3306"
+      - "3306:3306"
+    networks:
+      - chattergpt_network
+  chattergpt:
+    image: chattergpt
+    container_name: chattergpt
+    environment:
+      DATASOURCE_PASSWORD: "${DATASOURCE_PASSWORD}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
+      STRIPE_API_KEY: "${STRIPE_API_KEY}"
+      STRIPE_10_EURO_PRODUCT_ID: "${STRIPE_10_EURO_PRODUCT_ID}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
+      VIRTUAL_HOST: chattergpt.net
+      LETSENCRYPT_HOST: chattergpt.net
+      VIRTUAL_PORT: 8080
+    ports:
+      - "8080:8080"
+    networks:
+      - chattergpt_network
 
+networks:
+  default:
+    external:
+      name: nginx-proxy
+  chattergpt_network:
+    driver: bridge
