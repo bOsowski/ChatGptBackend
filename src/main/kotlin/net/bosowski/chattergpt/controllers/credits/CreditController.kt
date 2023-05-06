@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import org.springframework.web.servlet.view.RedirectView
 import javax.servlet.http.HttpServletRequest
 
@@ -31,11 +32,11 @@ class CreditController {
     @Value("\${stripe.api.product}")
     lateinit var stripeProduct: String
 
-    val baseUrl = "http://chattergpt.net:8080"  //ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
     val log = LoggerFactory.getLogger(this::class.java)
 
     @GetMapping("/purchase")
     fun purchase(@AuthenticationPrincipal user: OauthUser): RedirectView {
+        val baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
         Stripe.apiKey = stripeApiKey
         val sessionCreateParams = SessionCreateParams.builder()
             .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)

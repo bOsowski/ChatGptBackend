@@ -9,7 +9,7 @@ services:
       MARIADB_ROOT_PASSWORD: "${DATASOURCE_PASSWORD}"
       MYSQL_DATABASE: "chattergpt"
     ports:
-      - "3309:3306"
+      - "3306:3306"
     networks:
       - chattergpt_network
   chattergpt:
