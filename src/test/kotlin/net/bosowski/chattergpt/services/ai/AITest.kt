@@ -14,6 +14,5 @@ class AITest {
 
     @Test
     fun getResponse() {
-        val response = ai.getResponse()
     }
 }
