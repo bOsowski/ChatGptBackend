@@ -1,8 +1,6 @@
-# ChatterGPT API Backend
+# ChatGPT API Backend
 
-https://chattergpt.net
-
-ChatterGPT API Backend is a backend application that simplifies the integration of OpenAI's API with various applications. By managing user accounts, credits, requests, and completions, it streamlines analytics and troubleshooting. Users can purchase credits through an associated frontend, removing the need for end-users to manage API keys and enabling service providers to charge for usage.
+This API Backend is a backend application that simplifies the integration of OpenAI's API with various applications. By managing user accounts, credits, requests, and completions, it streamlines analytics and troubleshooting. Users can purchase credits through an associated frontend, removing the need for end-users to manage API keys and enabling service providers to charge for usage.
 
 API users are authenticated using JWT tokens obtained from Google's OAuth2.0 repository server. MariaDB serves as the database to store user information and request/completion logs. The backend is developed using Kotlin and the Spring Boot framework, ensuring efficiency and performance. The frontend, a simple HTML page with JavaScript, handles login/logout and credit purchasing functionalities. Payments are securely processed through [Stripe](https://stripe.com).
 
